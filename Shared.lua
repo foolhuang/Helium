@@ -15,18 +15,15 @@ defines
 includedirs
 {
 	".",
-	"Dependencies/boost",
-	"Dependencies/Expat",
+	"Dependencies/boost-preprocessor/include",
+	"Dependencies/expat/lib",
 	"Dependencies/freetype/include",
-	"Dependencies/LiteSQL/include",
-	"Dependencies/lua/src",
+	"Dependencies/libpng",
 	"Dependencies/nvtt",
+	"Dependencies/nvtt/extern/poshlib",
 	"Dependencies/nvtt/src",
 	"Dependencies/nvtt/src/nvtt/squish",
 	"Dependencies/p4api/include",
-	"Dependencies/png",
-	"Dependencies/tiff",
-	"Dependencies/tiff/libtiff",
 	"Dependencies/tbb/include",
 	"Dependencies/wxWidgets/include",
 	"Dependencies/zlib",
@@ -142,17 +139,21 @@ if os.get() == "windows" then
 			"/NODEFAULTLIB:wxmsw29u_gl",
 			"/NODEFAULTLIB:wxmsw29_gl",
 		}
-		includedirs
-		{
-			os.getenv( "DXSDK_DIR" ) .. "Include"
-		}
+		if _ACTION == "vs2010" or _ACTION == "vs2008" then
+			includedirs
+			{
+				os.getenv( "DXSDK_DIR" ) .. "Include"
+			}
+		end
 
 	configuration { "windows", "x32" }
-		libdirs
-		{
-			os.getenv( "DXSDK_DIR" ) .. "Lib/x86",
-		}
-	
+		if _ACTION == "vs2010" or _ACTION == "vs2008" then
+			libdirs
+			{
+				os.getenv( "DXSDK_DIR" ) .. "Lib/x86",
+			}
+		end
+
 		if haveGranny then
 			libdirs
 			{
@@ -161,11 +162,13 @@ if os.get() == "windows" then
 		end
 
 	configuration { "windows", "x64" }
-		libdirs
-		{
-			os.getenv( "DXSDK_DIR" ) .. "Lib/x64",
-		}
-	
+		if _ACTION == "vs2010" or _ACTION == "vs2008" then
+			libdirs
+			{
+				os.getenv( "DXSDK_DIR" ) .. "Lib/x64",
+			}
+		end
+		
 		if haveGranny then
 			libdirs
 			{
@@ -222,6 +225,30 @@ elseif _ACTION == "vs2010" then
 		{
 			"Dependencies/tbb/build/windows_intel64_cl_vc10_release",
 		}
+elseif _ACTION == "vs2012" then
+	configuration { "windows", "x32", "Debug" }
+		libdirs
+		{
+			"Dependencies/tbb/build/windows_ia32_cl_vc11_debug",
+		}
+
+	configuration { "windows", "x32", "not Debug" }
+		libdirs
+		{
+			"Dependencies/tbb/build/windows_ia32_cl_vc11_release",
+		}
+
+	configuration { "windows", "x64", "Debug" }
+		libdirs
+		{
+			"Dependencies/tbb/build/windows_intel64_cl_vc11_debug",
+		}
+
+	configuration { "windows", "x64", "not Debug" }
+		libdirs
+		{
+			"Dependencies/tbb/build/windows_intel64_cl_vc11_release",
+		}
 elseif _ACTION == "xcode3" or _ACTION == "xcode4" then
 	configuration { "windows", "x32", "Debug" }
 		libdirs
@@ -260,7 +287,9 @@ project( prefix .. "Platform" )
 
 	files
 	{
-		"Platform/*",
+		"Platform/*.cpp",
+		"Platform/*.h",
+		"Platform/*.inl",
 	}
 
 	configuration "windows"
@@ -285,22 +314,6 @@ project( prefix .. "Platform" )
 			"Platform/*Mac.*",
 		}
 
-project( prefix .. "Math" )
-	uuid "129267DC-66C7-489B-8538-ADF1B6EA4160"
-
-	Helium.DoModuleProjectSettings( ".", "HELIUM", "Math", "MATH" )
-
-	files
-	{
-		"Math/*",
-	}
-
-	configuration "SharedLib"
-		links
-		{
-			prefix .. "Platform",
-		}
-
 project( prefix .. "Foundation" )
 	uuid "9708463D-9698-4BB6-A911-37354AF0E21E"
 
@@ -318,9 +331,70 @@ project( prefix .. "Foundation" )
 		links
 		{
 			prefix .. "Platform",
+			"expat",
+		}
+
+project( prefix .. "Buffers" )
+	uuid "F8A00DD4-2BAF-4409-A713-366AA79386AB"
+
+	Helium.DoModuleProjectSettings( ".", "HELIUM", "Buffers", "BUFFERS" )
+
+	files
+	{
+		"Buffers/**",
+	}
+
+    pchheader( "BuffersPch.h" )
+    pchsource( "Buffers/BuffersPch.cpp" )
+
+	configuration "SharedLib"
+		links
+		{
+			prefix .. "Platform",
+			prefix .. "Foundation",
 			prefix .. "Math",
-			"Expat",
+		}
+
+project( prefix .. "Reflect" )
+	uuid "6488751F-220A-4E88-BA5B-A1BE5E3124EC"
+
+	Helium.DoModuleProjectSettings( ".", "HELIUM", "Reflect", "REFLECT" )
+
+	files
+	{
+		"Reflect/**",
+	}
+
+    pchheader( "ReflectPch.h" )
+    pchsource( "Reflect/ReflectPch.cpp" )
+
+	configuration "SharedLib"
+		links
+		{
+			prefix .. "Platform",
+			prefix .. "Foundation",
 			"zlib",
+		}
+
+project( prefix .. "Math" )
+	uuid "8F42DBD6-75E3-4A16-A3B6-77381600009D"
+
+	Helium.DoModuleProjectSettings( ".", "HELIUM", "Math", "MATH" )
+
+	files
+	{
+		"Math/**",
+	}
+
+    pchheader( "MathPch.h" )
+    pchsource( "Math/MathPch.cpp" )
+
+	configuration "SharedLib"
+		links
+		{
+			prefix .. "Platform",
+			prefix .. "Foundation",
+			prefix .. "Reflect",
 		}
 
 project( prefix .. "Engine" )
@@ -337,8 +411,9 @@ project( prefix .. "Engine" )
 		links
 		{
 			prefix .. "Platform",
-			prefix .. "Math",
 			prefix .. "Foundation",
+			prefix .. "Reflect",
+			prefix .. "Math",
 		}
 
 project( prefix .. "EngineJobs" )
@@ -355,8 +430,9 @@ project( prefix .. "EngineJobs" )
 		links
 		{
 			prefix .. "Platform",
-			prefix .. "Math",
 			prefix .. "Foundation",
+			prefix .. "Reflect",
+			prefix .. "Math",
 			prefix .. "Engine",
 		}
 
@@ -374,8 +450,9 @@ project( prefix .. "Windowing" )
 		links
 		{
 			prefix .. "Platform",
-			prefix .. "Math",
 			prefix .. "Foundation",
+			prefix .. "Reflect",
+			prefix .. "Math",
 			prefix .. "Engine",
 			prefix .. "EngineJobs",
 		}
@@ -394,8 +471,9 @@ project( prefix .. "Rendering" )
 		links
 		{
 			prefix .. "Platform",
-			prefix .. "Math",
 			prefix .. "Foundation",
+			prefix .. "Reflect",
+			prefix .. "Math",
 			prefix .. "Engine",
 			prefix .. "EngineJobs",
 		}
@@ -414,8 +492,9 @@ project( prefix .. "GraphicsTypes" )
 		links
 		{
 			prefix .. "Platform",
-			prefix .. "Math",
 			prefix .. "Foundation",
+			prefix .. "Reflect",
+			prefix .. "Math",
 			prefix .. "Engine",
 			prefix .. "EngineJobs",
 			prefix .. "Rendering",
@@ -435,8 +514,9 @@ project( prefix .. "GraphicsJobs" )
 		links
 		{
 			prefix .. "Platform",
-			prefix .. "Math",
 			prefix .. "Foundation",
+			prefix .. "Reflect",
+			prefix .. "Math",
 			prefix .. "Engine",
 			prefix .. "EngineJobs",
 			prefix .. "Rendering",
@@ -457,8 +537,9 @@ project( prefix .. "Graphics" )
 		links
 		{
 			prefix .. "Platform",
-			prefix .. "Math",
 			prefix .. "Foundation",
+			prefix .. "Reflect",
+			prefix .. "Math",
 			prefix .. "Engine",
 			prefix .. "EngineJobs",
 			prefix .. "Rendering",
@@ -480,8 +561,9 @@ project( prefix .. "Framework" )
 		links
 		{
 			prefix .. "Platform",
-			prefix .. "Math",
 			prefix .. "Foundation",
+			prefix .. "Reflect",
+			prefix .. "Math",
 			prefix .. "Engine",
 			prefix .. "EngineJobs",
 			prefix .. "Windowing",
@@ -505,8 +587,9 @@ project( prefix .. "WindowingWin" )
 		links
 		{
 			prefix .. "Platform",
-			prefix .. "Math",
 			prefix .. "Foundation",
+			prefix .. "Reflect",
+			prefix .. "Math",
 			prefix .. "Engine",
 			prefix .. "EngineJobs",
 			prefix .. "Windowing",
@@ -526,8 +609,9 @@ project( prefix .. "RenderingD3D9" )
 		links
 		{
 			prefix .. "Platform",
-			prefix .. "Math",
 			prefix .. "Foundation",
+			prefix .. "Reflect",
+			prefix .. "Math",
 			prefix .. "Engine",
 			prefix .. "EngineJobs",
 			prefix .. "Rendering",
@@ -547,8 +631,9 @@ project( prefix .. "PcSupport" )
 		links
 		{
 			prefix .. "Platform",
-			prefix .. "Math",
 			prefix .. "Foundation",
+			prefix .. "Reflect",
+			prefix .. "Math",
 			prefix .. "Engine",
 			prefix .. "EngineJobs",
 			prefix .. "Rendering",
@@ -568,8 +653,9 @@ project( prefix .. "PreprocessingPc" )
 		links
 		{
 			prefix .. "Platform",
-			prefix .. "Math",
 			prefix .. "Foundation",
+			prefix .. "Reflect",
+			prefix .. "Math",
 			prefix .. "Engine",
 			prefix .. "EngineJobs",
 			prefix .. "Rendering",
@@ -593,8 +679,9 @@ project( prefix .. "EditorSupport" )
 		links
 		{
 			prefix .. "Platform",
-			prefix .. "Math",
 			prefix .. "Foundation",
+			prefix .. "Reflect",
+			prefix .. "Math",
 			prefix .. "Engine",
 			prefix .. "EngineJobs",
 			prefix .. "Windowing",
@@ -621,8 +708,9 @@ project( prefix .. "FrameworkWin" )
 		links
 		{
 			prefix .. "Platform",
-			prefix .. "Math",
 			prefix .. "Foundation",
+			prefix .. "Reflect",
+			prefix .. "Math",
 			prefix .. "Engine",
 			prefix .. "EngineJobs",
 			prefix .. "Windowing",
@@ -637,3 +725,113 @@ project( prefix .. "FrameworkWin" )
 			prefix .. "PreprocessingPc",
 			prefix .. "EditorSupport",
 		}
+		
+project( prefix .. "TestJobs" )-- DEPRECATED
+	uuid "12106586-0EB1-4D4C-9DFE-E3C63D3E4013"
+
+	Helium.DoModuleProjectSettings( ".", "HELIUM", "TestJobs", "TEST_JOBS" )
+	
+	files
+	{
+		"TestJobs/**",
+	}
+
+	configuration "SharedLib"
+		links
+		{
+			prefix .. "Platform",
+			prefix .. "Foundation",
+			prefix .. "Reflect",
+			prefix .. "Math",
+			prefix .. "Engine",
+			prefix .. "EngineJobs",
+		}
+
+project( prefix .. "TestApp" )-- DEPRECATED
+	uuid "CB5427DC-CE08-4FA6-B060-F35A902806BA"
+
+	kind "WindowedApp"
+
+	files
+	{
+		"TestApp/**.cpp",
+		"TestApp/**.h",
+		"TestApp/**.ico",
+		"TestApp/**.rc"
+	}
+
+	flags
+	{
+		"WinMain",
+	}
+
+	links
+	{
+		prefix .. "Platform",
+		prefix .. "Foundation",
+		prefix .. "Reflect",
+		prefix .. "Math",
+		prefix .. "Engine",
+		prefix .. "EngineJobs",
+		prefix .. "Windowing",
+		prefix .. "Rendering",
+		prefix .. "GraphicsTypes",
+		prefix .. "GraphicsJobs",
+		prefix .. "Graphics",
+		prefix .. "Framework",
+		prefix .. "WindowingWin",
+		prefix .. "RenderingD3D9",
+		prefix .. "PcSupport",
+		prefix .. "PreprocessingPc",
+		prefix .. "EditorSupport",
+		prefix .. "FrameworkWin",
+		prefix .. "TestJobs",
+	}
+
+	pchheader( "TestAppPch.h" )
+	pchsource( "TestApp/TestAppPch.cpp" )
+
+	Helium.DoDefaultProjectSettings()
+
+	-- TestApp is a bit odd because it includes custom game objects and a main().
+	-- So we need the dll export #defines. But calling DoModuleProjectSettings(...) above
+	-- seems to blow away the libs we try to import when we call DoDefaultProjectSettings()
+	configuration { "windows", "Debug" }
+	defines
+	{
+		"HELIUM_TEST_APP_EXPORTS",
+	}
+
+	configuration "windows"
+		links
+		{
+			"d3d9",
+			"d3d11",
+			"wininet",
+			"ws2_32",
+			"dbghelp",
+		}
+
+	configuration { "windows", "Debug" }
+		links
+		{
+			Helium.DebugFbxLib,
+		}
+	configuration { "windows", "not Debug" }
+		links
+		{
+			Helium.ReleaseFbxLib,
+		}
+		
+	if haveGranny then
+		configuration "x32"
+			links
+			{
+				"granny2",
+			}
+		configuration "x64"
+			links
+			{
+				"granny2_x64",
+			}
+	end

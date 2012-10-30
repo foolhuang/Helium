@@ -56,7 +56,6 @@
 #  define D3D_DEBUG_INFO
 # endif
 # include <d3d9.h>
-# include <d3dx9.h>
 #endif
 
 //
@@ -69,7 +68,7 @@
 
 #if 0
 use /Zm128+
-#include "Foundation/Reflect/Object.h"
-#include "Foundation/Reflect/Registry.h"
-#include "Foundation/Reflect/Data/DataDeduction.h"
+#include "Reflect/Object.h"
+#include "Reflect/Registry.h"
+#include "Reflect/Data/DataDeduction.h"
 #endif

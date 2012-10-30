@@ -3,17 +3,18 @@
 #include "VaultSearchResults.h"
 #include "ThumbnailLoadedEvent.h"
 
+#include "Platform/Process.h"
+
 #include "Foundation/File/Path.h"
 #include "Foundation/String/Utilities.h"
-#include "Editor/UpdateStatusEvent.h"
-#include "Editor/DragDrop/DropSource.h"
-#include "Foundation/Undo/UndoCommand.h"
-#include "Editor/ArtProvider.h"
+#include "Foundation/UndoQueue.h"
 
 #include "SceneGraph/Color.h"  // BARF! Should we move Color.h to Editor?
 #include "SceneGraph/Render.h" // BARF! Should we move Render.h to Editor?
 
-#include "Platform/Process.h"
+#include "Editor/UpdateStatusEvent.h"
+#include "Editor/DragDrop/DropSource.h"
+#include "Editor/ArtProvider.h"
 
 #include <wx/dnd.h>
 #include <shellapi.h>
@@ -71,8 +72,10 @@ END_EVENT_TABLE()
 ThumbnailView::ThumbnailView( wxWindow *parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name )
 : wxScrolledWindow( parent, id, pos, size, style, name )
 , m_LabelFontHeight( 14 )
+#ifdef VIEWPORT_REFACTOR
 , m_LabelFont( NULL )
 , m_TypeFont( NULL )
+#endif
 , m_EditCtrl( NULL )
 , m_TileCreator( this )
 , m_MouseDown( false )
@@ -159,6 +162,7 @@ ThumbnailView::~ThumbnailView()
     m_DeviceManager.RemoveDeviceLostListener( DeviceStateSignature::Delegate( this, &ThumbnailView::OnReleaseResources ) );
 #endif
 
+#ifdef VIEWPORT_REFACTOR
     if ( m_LabelFont )
     {
         m_LabelFont->Release();
@@ -170,6 +174,7 @@ ThumbnailView::~ThumbnailView()
         m_TypeFont->Release();
         m_TypeFont = NULL;
     }
+#endif
 
     DeleteResources();
 
@@ -591,7 +596,9 @@ void ThumbnailView::UpdateProjectionMatrix()
     m_Projection.Invert();
 
     Matrix4 ortho;
+#ifdef VIEWPORT_REFACTOR
     D3DXMatrixOrthoOffCenterRH( (D3DXMATRIX*)&ortho, 0, GetSize().x, -GetSize().y, 0, s_NearClipDistance, s_FarClipDistance );
+#endif
 
     m_Projection *= ortho;
 }
@@ -728,6 +735,7 @@ void ThumbnailView::CreateResources()
 // 
 void ThumbnailView::DeleteResources()
 {
+#ifdef VIEWPORT_REFACTOR
     if ( m_LabelFont )
     {
         m_LabelFont->OnLostDevice();
@@ -737,6 +745,7 @@ void ThumbnailView::DeleteResources()
     {
         m_TypeFont->OnLostDevice();
     }
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////

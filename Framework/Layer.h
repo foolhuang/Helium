@@ -18,8 +18,13 @@
 
 namespace Helium
 {
-    HELIUM_DECLARE_PTR( Entity );
-    HELIUM_DECLARE_WPTR( World );
+    class Entity;
+    typedef Helium::StrongPtr< Entity > EntityPtr;
+    typedef Helium::StrongPtr< const Entity > ConstEntityPtr;
+
+    class World;
+    typedef Helium::WeakPtr< World > WorldWPtr;
+    typedef Helium::WeakPtr< const World > ConstWorldWPtr;
 
     /// Container for entities.
     ///
@@ -43,7 +48,7 @@ namespace Helium
 
         /// @name Serialization
         //@{
-        virtual void Serialize( Serializer& s );
+        //virtual void Serialize( Serializer& s );
         //@}
 
         /// @name Dynamic Package Binding

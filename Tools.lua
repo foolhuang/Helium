@@ -13,25 +13,26 @@ dofile "Shared.lua"
 
 local prefix = solution().name .. '.'
 
-project( prefix .. "Image" )
-	uuid "50F5AA7E-22D9-4D33-B48A-357CD3082BC1"
+project( prefix .. "Inspect" )
+	uuid "D4D7F216-5EE6-4252-BF25-0698C1BD30CD"
 
-	Helium.DoModuleProjectSettings( ".", "HELIUM", "Image", "IMAGE" )
+	Helium.DoModuleProjectSettings( ".", "HELIUM", "Inspect", "INSPECT" )
 
 	files
 	{
-		"Image/**",
+		"Inspect/**",
 	}
+
+    pchheader( "InspectPch.h" )
+    pchsource( "Inspect/InspectPch.cpp" )
 
 	configuration "SharedLib"
 		links
 		{
 			prefix .. "Platform",
-			prefix .. "Math",
 			prefix .. "Foundation",
-			"nvtt",
-			"d3d9",
-			"d3dx9",
+			prefix .. "Reflect",
+			prefix .. "Math",
 		}
 
 project( prefix .. "SceneGraph" )
@@ -48,8 +49,10 @@ project( prefix .. "SceneGraph" )
 		links
 		{
 			prefix .. "Platform",
-			prefix .. "Math",
 			prefix .. "Foundation",
+			prefix .. "Reflect",
+			prefix .. "Inspect",
+			prefix .. "Math",
 			prefix .. "Engine",
 			prefix .. "EngineJobs",
 			prefix .. "Windowing",
@@ -64,7 +67,6 @@ project( prefix .. "SceneGraph" )
 			prefix .. "PreprocessingPc",
 			prefix .. "EditorSupport",
 			"d3d9",
-			"d3dx9",
 		}
 
 project( prefix .. "Editor" )
@@ -91,8 +93,10 @@ project( prefix .. "Editor" )
 	links
 	{
 		prefix .. "Platform",
-		prefix .. "Math",
 		prefix .. "Foundation",
+		prefix .. "Reflect",
+		prefix .. "Math",
+		prefix .. "Inspect",
 		prefix .. "Engine",
 		prefix .. "EngineJobs",
 		prefix .. "Windowing",
@@ -107,15 +111,12 @@ project( prefix .. "Editor" )
 		prefix .. "PreprocessingPc",
 		prefix .. "EditorSupport",
 		prefix .. "SceneGraph",
-		prefix .. "Image",
-		"Expat",
+		"expat",
 		"zlib",
 		"libclient",
 		"librpc",
 		"libsupp",
-		"lua",
 		"d3d9",
-		"d3dx9",
 		"ws2_32",
 	}
 	flags
@@ -132,7 +133,7 @@ project( prefix .. "Editor" )
 	configuration { "windows", "x64" }
 		libdirs
 		{
-			"Dependencies/wxWidgets/lib/vc_amd64_dll",
+			"Dependencies/wxWidgets/lib/vc_x64_dll",
 		}
 		
 	-- per configuration
@@ -151,20 +152,20 @@ project( prefix .. "Editor" )
 	configuration { "windows", "x32", "Debug" }
 		libdirs
 		{
-			"Dependencies/p4api/lib/Win32/Debug",
+			"Dependencies/p4api/lib/" .. _ACTION .. "/Win32/Debug",
 		}
 	configuration { "windows", "x32", "not Debug" }
 		libdirs
 		{
-			"Dependencies/p4api/lib/Win32/Release",
+			"Dependencies/p4api/lib/" .. _ACTION .. "/Win32/Release",
 		}
 	configuration { "windows", "x64", "Debug" }
 		libdirs
 		{
-			"Dependencies/p4api/lib/x64/Debug",
+			"Dependencies/p4api/lib/" .. _ACTION .. "/x64/Debug",
 		}
 	configuration { "windows", "x64", "not Debug" }
 		libdirs
 		{
-			"Dependencies/p4api/lib/x64/Release",
+			"Dependencies/p4api/lib/" .. _ACTION .. "/x64/Release",
 		}

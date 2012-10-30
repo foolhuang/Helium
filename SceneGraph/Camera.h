@@ -5,9 +5,9 @@
 #include "Math/FpuVector3.h"
 #include "Math/FpuMatrix4.h"
 #include "Math/FpuPoint.h"
-#include "Foundation/Input.h"
 
 #include "SceneGraph/API.h"
+#include "SceneGraph/Input.h"
 #include "SceneGraph/CameraSettings.h"
 
 namespace Helium
@@ -72,7 +72,7 @@ namespace Helium
         // Camera
         //
 
-        class SCENE_GRAPH_API Camera
+        class HELIUM_SCENE_GRAPH_API Camera
         {
         private:
             // total control size

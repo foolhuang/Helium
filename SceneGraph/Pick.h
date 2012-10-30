@@ -7,7 +7,7 @@
 
 #include "Foundation/Memory/SmartPtr.h"
 
-#include "Foundation/Reflect/Object.h"
+#include "Reflect/Object.h"
 #include "SceneGraph/Visitor.h"
 
 namespace Helium

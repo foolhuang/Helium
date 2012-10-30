@@ -2,7 +2,6 @@ Helium = {}
 
 Helium.RequiredPremakeVersion = '4.4-beta1'
 Helium.RequiredCLVersion = 150030729
-Helium.RequiredFBXVersion = '2012.2'
 
 os.capture = function( cmd, raw )
     local f = assert( io.popen( cmd, 'r' ) )
@@ -29,7 +28,7 @@ Helium.GetSystemVersion = function()
 end
 
 Helium.Build32Bit = function()
-	if ( _OPTIONS[ "build32and64" ] ) then
+	if ( _OPTIONS[ "universal" ] ) then
 		return true
 	else
     	return not os.is64bit()
@@ -37,31 +36,11 @@ Helium.Build32Bit = function()
 end
 
 Helium.Build64Bit = function()
-	if ( _OPTIONS[ "build32and64" ] ) then
+	if ( _OPTIONS[ "universal" ] ) then
 		return true
 	else
 	    return os.is64bit()
 	end
-end
-
-Helium.GetFbxSdkLocation = function()
-    local fbxLocation = os.getenv( 'FBX_SDK' )
-    if not fbxLocation then
-        if os.get() == "windows" then
-            fbxLocation = "C:\\Program Files\\Autodesk\\FBX\\FbxSdk\\" .. Helium.RequiredFBXVersion
-        elseif os.get() == "macosx" then
-	       	fbxLocation = "/Applications/Autodesk/FBXSDK" .. string.gsub(Helium.RequiredFBXVersion, "%.", "")
-        else
-            print("Implement support for " .. os.get() .. " to Helium.GetFbxSdkLocation()")
-            os.exit(1)
-        end
-		if not os.isdir( fbxLocation ) then
-            print("FBX SDK not found at: " .. fbxLocation)
-            os.exit(1)
-		end
-    end
-    
-    return fbxLocation
 end
 
 Helium.Sleep = function( seconds )
@@ -84,14 +63,6 @@ Helium.CheckEnvironment = function()
     if os.get() == "windows" then
     
         local failed = 0
-        
-        if os.pathsearch( 'python.exe', os.getenv( 'PATH' ) ) == nil and os.pathsearch( 'python3.bat', os.getenv( 'PATH' ) ) == nil then
-            print( " -> Python was not found in your path.  Python is required for the 'prebuild' phase." )
-            print( " -> Make sure to download python (http://www.python.org/download/) and add it to your path." )
-            print( " -> eg: Add c:\\Python\\Python31 to your path." )
-            failed = 1
-		end
-
         if os.getenv( "VCINSTALLDIR" ) == nil then
             print( " -> You must be running in a Visual Studio Command Prompt.")
             failed = 1
@@ -116,12 +87,12 @@ Helium.CheckEnvironment = function()
                 failed = 1
             end
         end
-        
+	  	
         if os.getenv( "DXSDK_DIR" ) == nil then
             print( " -> You must have the DirectX SDK installed (DXSDK_DIR is not defined in your environment)." )
             failed = 1
         end
-        
+
         local fbxDir = Helium.GetFbxSdkLocation()
         if not fbxDir or not os.isdir( fbxDir ) then
             print( " -> You must have the FBX SDK installed and the FBX_SDK environment variable set." )
@@ -216,7 +187,7 @@ Helium.DoDefaultSolutionSettings = function()
 
 	location "Premake"
 
-    if _OPTIONS[ "build32and64" ] then
+    if _OPTIONS[ "universal" ] then
         platforms
         {
             "x32",
@@ -361,6 +332,11 @@ Helium.DoDefaultSolutionSettings = function()
 			"/Oi",
 		}
 
+    -- vars to set in the project file for llvm + c++11 (for type traits)
+	-- CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+	-- CLANG_CXX_LIBRARY = "libc++";
+	-- GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+
 	configuration {}
 
 end
@@ -386,10 +362,10 @@ Helium.DoDefaultProjectSettings = function()
 	configuration "SharedLib or *App"
 		links
 		{
-			"Expat",
+			"expat",
 			"freetype",
+			"libpng",
 			"nvtt",
-			"png",
 			"zlib",
 		}
 
@@ -397,12 +373,12 @@ Helium.DoDefaultProjectSettings = function()
 		links
 		{
 			"ws2_32",
+			"wininet",
 			"d3d9",
 			"d3dx9",
 			"d3d11",
-			"dxguid",
 			"d3dcompiler",
-			"wininet",
+			"dxguid",
 		}
 
 	configuration { "windows", "SharedLib or *App" }
@@ -414,12 +390,12 @@ Helium.DoDefaultProjectSettings = function()
 	configuration { "windows", "Debug", "SharedLib or *App" }
 		links
 		{
-			"fbxsdk-2012.2d",
+			Helium.DebugFbxLib,
 		}
 	configuration { "windows", "not Debug", "SharedLib or *App" }
 		links
 		{
-			"fbxsdk-2012.2",
+			Helium.ReleaseFbxLib,
 		}
 
 	if haveGranny then
@@ -449,8 +425,23 @@ Helium.DoModuleProjectSettings = function( baseDirectory, tokenPrefix, moduleNam
 		"HELIUM_MODULE_HEAP_FUNCTION=Get" .. moduleName .. "DefaultHeap"
 	}
 
-	pchheader( moduleName .. "Pch.h" )
-	pchsource( baseDirectory .. "/" .. moduleName .. "/" .. moduleName .. "Pch.cpp" )
+    local header = moduleName .. "Pch.h"
+
+    if os.get() == "macosx" then
+    	header = path.join( moduleName, header )
+    	header = path.join( baseDirectory, header )
+    	header = path.join( "..", header )
+    	header = path.join( "..", header )
+    end
+
+	pchheader( header )
+
+	local source = moduleName .. "Pch.cpp"
+
+	source = path.join( moduleName, source )
+	source = path.join( baseDirectory, source )
+
+	pchsource( source )
 
 	Helium.DoDefaultProjectSettings()
 

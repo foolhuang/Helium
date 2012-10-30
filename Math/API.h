@@ -2,6 +2,8 @@
 
 #include "Platform/Platform.h"  // Always make sure Platform.h gets included first.
 
+#include "Foundation/Profile.h"
+
 #if HELIUM_SHARED
 # ifdef HELIUM_MATH_EXPORTS
 #  define HELIUM_MATH_API HELIUM_API_EXPORT

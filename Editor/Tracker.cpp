@@ -2,9 +2,10 @@
 #include "Tracker.h"
 
 #include "Foundation/File/Path.h"
-#include "Foundation/Component/SearchableProperties.h"
 #include "Foundation/String/Wildcard.h"
 #include "Foundation/Version.h"
+
+#include "SceneGraph/SearchableProperties.h"
 
 using namespace Helium;
 using namespace Helium::Editor;
@@ -29,8 +30,6 @@ inline void SleepBetweenTracking( bool* cancel = NULL, const uint32_t minutes = 
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-int Tracker::s_InitCount = 0;
-Helium::InitializerStack Tracker::s_InitializerStack;
 
 Tracker::Tracker()
 : m_StopTracking( false )
@@ -39,10 +38,7 @@ Tracker::Tracker()
 , m_Total( 0 )
 , m_CurrentProgress( 0 )
 {
-    if ( ++s_InitCount == 1 )
-    {
-        //s_InitializerStack.Push( Reflect::RegisterClassType< AssetIndexData >( TXT( "Editor::AssetIndexData" ) ) );
-    }
+
 }
 
 Tracker::~Tracker()
@@ -51,12 +47,6 @@ Tracker::~Tracker()
     {
         StopThread();
     }
-
-    if ( --s_InitCount == 0 )
-    {
-        //s_InitializerStack.Cleanup();
-    }
-    HELIUM_ASSERT( s_InitCount >= 0 );
 }
 
 void Tracker::SetProject( Project* project )

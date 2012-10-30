@@ -5,9 +5,8 @@
 #include "Platform/Assert.h"
 
 #include "Foundation/API.h"
+#include "Foundation/Math.h"
 #include "Foundation/Container/ArrayIterator.h"
-
-#include "Math/Common.h"
 
 #include "boost/preprocessor/repetition/enum_params.hpp"
 #include "boost/preprocessor/repetition/enum_binary_params.hpp"
@@ -87,6 +86,8 @@ namespace Helium
         void Pop();
 
         void Swap( DynArray& rArray );
+
+        uint32_t GetIndexOfPointer(const T *_ptr) const;
         //@}
 
         /// @name In-place Object Creation

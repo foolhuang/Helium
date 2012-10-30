@@ -13,7 +13,7 @@
 
 #include "Foundation/Name.h"
 #include "Foundation/Memory/ReferenceCounting.h"
-#include "Foundation/Reflect/Enumeration.h"
+#include "Reflect/Enumeration.h"
 
 #include "boost/preprocessor/seq.hpp"
 #include "boost/preprocessor/wstringize.hpp"
@@ -177,7 +177,9 @@ namespace Helium
 {
     class GameObjectType;
 
-    HELIUM_DECLARE_PTR( GameObject );
+    class GameObject;
+    typedef Helium::StrongPtr< GameObject > GameObjectPtr;
+    typedef Helium::StrongPtr< const GameObject > ConstGameObjectPtr;
 
     /// Struct serialization wrapper.
     template< typename T >

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "TestApp/TestApp.h"
+
 #include "Platform/Platform.h"
 #include "Platform/Socket.h"
 #include "Platform/Trace.h"
@@ -8,7 +10,7 @@
 #include "Foundation/File/Path.h"
 #include "Foundation/Stream/FileStream.h"
 #include "Foundation/Stream/BufferedStream.h"
-#include "Foundation/AsyncLoader.h"
+#include "Engine/AsyncLoader.h"
 #include "Foundation/Container/Map.h"
 #include "Foundation/Container/SortedMap.h"
 #include "Foundation/Container/SortedSet.h"
@@ -66,9 +68,17 @@
 
 namespace Helium
 {
-    HELIUM_DECLARE_PTR( Camera );
-    HELIUM_DECLARE_PTR( SkeletalMeshEntity );
-    HELIUM_DECLARE_PTR( StaticMeshEntity );
+    class Camera;
+    typedef Helium::StrongPtr< Camera > CameraPtr;
+    typedef Helium::StrongPtr< const Camera > ConstCameraPtr;
+
+    class SkeletalMeshEntity;
+    typedef Helium::StrongPtr< SkeletalMeshEntity > SkeletalMeshEntityPtr;
+    typedef Helium::StrongPtr< const SkeletalMeshEntity > ConstSkeletalMeshEntityPtr;
+
+	class StaticMeshEntity;
+    typedef Helium::StrongPtr< StaticMeshEntity > StaticMeshEntityPtr;
+    typedef Helium::StrongPtr< const StaticMeshEntity > ConstStaticMeshEntityPtr;
 
     HELIUM_DECLARE_RPTR( RRenderContext );
     HELIUM_DECLARE_RPTR( RSurface );

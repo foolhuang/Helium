@@ -1,6 +1,16 @@
 #include "MathPch.h"
 #include "Math/SimdAaBox.h"
 
+#include "Reflect/Data/DataDeduction.h"
+
+REFLECT_DEFINE_BASE_STRUCTURE( Helium::Simd::AaBox );
+
+void Helium::Simd::AaBox::PopulateComposite( Reflect::Composite& comp )
+{
+    comp.AddStructureField( &AaBox::m_minimum,       TXT( "m_minimum" ) );
+    comp.AddStructureField( &AaBox::m_maximum,       TXT( "m_maximum" ) );
+}
+
 /// Constructor.
 ///
 /// This will initialize this bounding box with both minimum and maximum coordinates set to the origin.

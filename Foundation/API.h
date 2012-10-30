@@ -9,7 +9,7 @@
 #  define HELIUM_FOUNDATION_API HELIUM_API_IMPORT
 # endif
 #else
-#define HELIUM_FOUNDATION_API
+# define HELIUM_FOUNDATION_API
 #endif
 
 // profiling

@@ -51,7 +51,7 @@ typedef HRESULT ( WINAPI DIRECT3DCREATE9EX_FUNC )( UINT, IDirect3D9Ex** );
 
 // GUID associated with engine-specific private data associated with Direct3D resources.
 // {E4EC0248-A917-4163-A56C-A8962C9362F2}
-const GUID D3D9Renderer::sm_privateDataGuid =
+const ::GUID D3D9Renderer::sm_privateDataGuid =
 {
     0xe4ec0248,
     0xa917,
@@ -420,14 +420,6 @@ RRenderContext* D3D9Renderer::CreateSubContext( const ContextInitParameters& rIn
     }
 
     HELIUM_ASSERT( pSwapChain );
-#ifndef NDEBUG
-    if( m_bExDevice )
-    {
-        void* pSwapChainEx = NULL;
-        L_D3D9_VERIFY( pSwapChain->QueryInterface( IID_IDirect3DSwapChain9Ex, &pSwapChainEx ) );
-        HELIUM_ASSERT( pSwapChainEx );
-    }
-#endif
 
     // Create the rendering sub-context interface.
     D3D9SubContext* pSubContext = new D3D9SubContext( pSwapChain );
